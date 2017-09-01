@@ -1,0 +1,19 @@
+1. Hệ (Thêm, xóa, sửa)
+	xóa: cần kiểm tra Bộ môn
+2. Chức vụ (Thêm, xóa, sửa)
+	Ngày nhận chức: Rỗng thì default lấy getdate
+	Ngày miễn nhiễm: Rỗng thì default lấy + năm với ngày nhận chức
+	Xóa: cần kiểm tra bảng giáo viên
+3. Bộ môn (Thêm, xóa, sửa)
+	Tồn tài: Hệ, Trưởng bộ môn
+	Rỗng: Trưởng bộ môn
+	(*)Xóa: Kiểm tra giaovien
+4. Phân quyền (Thêm, xóa, sửa)
+	Ngày Tạo: Rỗng thi default lấy getdate
+	
+5. giáo viên (Thêm, xóa, sửa)
+	Tuổi lao động: tối thiệu trên 10t
+	BIT
+update or xóa vẫn phải tồn tại cmnd
+6. Câu hỏi (Thêm, xóa, sửa)
+	Bảng:  Mã Bộ Đề
