@@ -15,5 +15,11 @@
 	Tuổi lao động: tối thiệu trên 10t
 	BIT
 update or xóa vẫn phải tồn tại cmnd
+6. 
 6. Câu hỏi (Thêm, xóa, sửa)
+	
 	Bảng:  Mã Bộ Đề
+	mucdo: 1: kho  2: de  3: vua
+	lua chon: 0: 1 lua chon 1: nhieu lua chon
+	trang thai: 0 : an 1: hien
+	
