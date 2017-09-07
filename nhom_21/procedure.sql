@@ -1,7 +1,24 @@
 ﻿GO
 USE [WWSGO]
 GO
-
+DECLARE 	@Quyen_XemCauHoi int,
+			@Quyen_ThemCauHoi int,
+			@Quyen_XoaCauHoi int,
+			@Quyen_CapNhatCauHoi int,
+			@Quyen_TaoBoDe int,
+			@Quyen_ThemMonHoc int,
+			@Quyen_GopY int,
+			@Quyen_ThemTaiKhoan int,
+			@Quyen_XoaTaiKhoan int,
+			@Quyen_SuaTaiKhoan int,
+			@Quyen_KhoaTaiKhoan int,
+			@Quyen_CapQuanLy int,
+			@Quyen_ChucVu int,
+			@Quyen_NienKhoa int,
+SET		@Quyen_XemCauHoi = 1, @Quyen_ThemCauHoi = 2, @Quyen_XoaCauHoi = 3,
+			@Quyen_CapNhatCauHoi = 4, @Quyen_TaoBoDe = 5, @Quyen_ThemMonHoc = 6,
+			@Quyen_GopY = 7, @Quyen_ThemTaiKhoan = 8, @Quyen_XoaTaiKhoan = 9
+			@Quyen_SuaTaiKhoan = 10, @Quyen_KhoaTaiKhoan = 11, @Quyen_CapQuanLy = 12, @Quyen_ChucVu = 13, @Quyen_NienKhoa = 14
 /*
 *** Proc He ***
 1 - Select			Exec sp_selectHe
@@ -16,9 +33,15 @@ AS
 	END
 GO
 
-CREATE PROC sp_InsertHe (@TenHe varchar(255), @NgayTao date)
+CREATE PROC sp_InsertHe (@TenHe varchar(255), @NgayTao date, @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_ThemMonHoc ))
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF (@NgayTao = '')
 			BEGIN
 				set @NgayTao = GETDATE()
@@ -28,9 +51,15 @@ AS
 	END
 GO
 
-CREATE PROC sp_UpdateHe (@MaHe int,@TenHe varchar(255), @NgayTao date)
+CREATE PROC sp_UpdateHe (@MaHe int,@TenHe varchar(255), @NgayTao date, @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_ThemMonHoc ))
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF (EXISTS (select * from he where MaHe = @MaHe))
 			BEGIN
 				UPDATE he
@@ -48,9 +77,15 @@ AS
 	END
 GO
 
-CREATE PROC sp_DeleteHe (@MaHe int)
+CREATE PROC sp_DeleteHe (@MaHe int, @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_ThemMonHoc ))
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF (EXISTS (select * from bomon where MaHe = @MaHe))
 			BEGIN
 				Print N'Xóa thất bại hệ!'
@@ -92,9 +127,15 @@ AS
 	END
 GO
 
-CREATE PROC sp_InsertChucVu (@TenCV varchar(255), @NgayNhanChuc date, @NgayMienNhiem date)
+CREATE PROC sp_InsertChucVu (@TenCV varchar(255), @NgayNhanChuc date, @NgayMienNhiem date, @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_ChucVu ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF (@NgayNhanChuc = '')
 			BEGIN
 				set @NgayNhanChuc = GETDATE();
@@ -116,10 +157,15 @@ AS
 	END
 GO
 
-CREATE PROC sp_UpdateChucVu (@MaCV int,@TenCV varchar(255), @NgayNhanChuc date, @NgayMienNhiem date)
+CREATE PROC sp_UpdateChucVu (@MaCV int,@TenCV varchar(255), @NgayNhanChuc date, @NgayMienNhiem date, @MaGVCV int)
 AS
 	BEGIN
-		
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_ChucVu ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF (EXISTS (select * from chucvu where MaChucVu = @MaCV))
 			BEGIN
 				IF (@NgayMienNhiem = '')
@@ -150,9 +196,15 @@ AS
 	END
 GO
 
-CREATE PROC sp_DeleteChucVu (@MaCV int)
+CREATE PROC sp_DeleteChucVu (@MaCV int, @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_ChucVu ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF (EXISTS (select * from giaovien where MaChucVu = @MaCV))
 			BEGIN
 				Print N'Xóa thất bại chức vụ!'
@@ -196,9 +248,15 @@ AS
 GO
 
 CREATE PROC sp_InsertBoMon (@MaHe int, @TenBoMon varchar(255),
-						 @NgayTao date, @TruongBoMon int)
+						 @NgayTao date, @TruongBoMon int, @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_ThemMonHoc ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF (@NgayTao = '')
 			BEGIN
 				set @NgayTao = GETDATE()
@@ -231,9 +289,15 @@ AS
 GO
 
 CREATE PROC sp_UpdateBoMon (@MaBM int,@MaHe int, @TenBoMon varchar(255),
-						 @NgayTao date, @TruongBoMon int)
+						 @NgayTao date, @TruongBoMon int, @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_ThemMonHoc ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF (EXISTS (select * from bomon where MaBoMon = @MaBM))
 			BEGIN
 				IF	(EXISTS (select * from he where MaHe = @MaHe))
@@ -283,9 +347,15 @@ AS
 	END
 GO
 
-CREATE PROC sp_DeleteBoMon (@MaBM int)
+CREATE PROC sp_DeleteBoMon (@MaBM int, @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_ThemMonHoc ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF (EXISTS (select * from giaovien where MaBoMon = @MaBM))
 			BEGIN
 				Print N'Xóa thất bại bộ môn!'
@@ -330,9 +400,15 @@ AS
 	END
 GO
 
-CREATE PROC sp_InsertPhanQuyen (@TenPQ varchar(255), @NgayTao date)
+CREATE PROC sp_InsertPhanQuyen (@TenPQ varchar(255), @NgayTao date, @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_ChucVu ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF (@NgayTao = '')
 			BEGIN
 				set @NgayTao = GETDATE()
@@ -342,9 +418,15 @@ AS
 	END
 GO
 
-CREATE PROC sp_UpdatePhanQuyen (@MaPQ int,@TenPQ varchar(255), @NgayTao date)
+CREATE PROC sp_UpdatePhanQuyen (@MaPQ int,@TenPQ varchar(255), @NgayTao date, @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_ChucVu ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF (EXISTS (select * from phanquyen where MaPhanQuyen = @MaPQ))
 			BEGIN
 				UPDATE phanquyen
@@ -362,9 +444,15 @@ AS
 	END
 GO
 
-CREATE PROC sp_DeletePhanQuyen (@MaPQ int)
+CREATE PROC sp_DeletePhanQuyen (@MaPQ int, @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_ChucVu ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF (EXISTS (select * from phanquyen_giaovien where MaPhanQuyen = @MaPQ))
 			BEGIN
 				Print N'Xóa thất bại phân quyền!'
@@ -417,9 +505,15 @@ GO
 
 
 CREATE PROC sp_InsertGiaoVien(@MaCV int, @MaBM int, @TenGV varchar(255), @Ngaysinh date, @GioiTinh BIT,
-								@Ngayvaolam date, @GVQL int, @TrangThai BIT, @cmnd varchar(20))
+								@Ngayvaolam date, @GVQL int, @TrangThai BIT, @cmnd varchar(20), @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_ThemTaiKhoan ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF(@MaCV = '')
 			BEGIN
 				PRINT N'Thêm thất bại giáo viên! ' + @TenGV
@@ -530,9 +624,15 @@ GO
 
 
 CREATE PROC sp_UpdateGiaoVien(@MaGV int, @MaCV int, @MaBM int, @TenGV varchar(255), @Ngaysinh date, @GioiTinh BIT,
-								@Ngayvaolam date, @GVQL int, @TrangThai BIT, @cmnd varchar(20))
+								@Ngayvaolam date, @GVQL int, @TrangThai BIT, @cmnd varchar(20), @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_SuaTaiKhoan ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF( NOT EXISTS (select * from giaovien where MaGiaoVien = @MaGV) )
 			BEGIN
 				Print N'Không tồn tại giáo viên!'
@@ -690,9 +790,15 @@ AS
 	END
 GO
 
-CREATE PROC sp_DeleteGiaoVien (@MaGV int)
+CREATE PROC sp_DeleteGiaoVien (@MaGV int, @MaGVCV)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_XoaTaiKhoan ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF (	EXISTS (select * from phanquyen_giaovien where MaGiaoVien = @MaGV) OR
 				EXISTS (select * from cauhoi where MaGiaoVien = @MaGV) )
 			BEGIN
@@ -744,9 +850,15 @@ AS
 	END
 GO
 
-CREATE PROC sp_InsertPQGV(@MaGV int, @MaPQ int)
+CREATE PROC sp_InsertPQGV(@MaGV int, @MaPQ int, @MaGVCV)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_ChucVu ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF (@MaPQ = '')
 			BEGIN
 				PRINT N'Thêm thất bại phân quyền giáo viên! '
@@ -788,9 +900,15 @@ AS
 	END
 GO
 
-CREATE PROC sp_UpdatePQGV(@MaGV int,@MaPQ int,@MaPQnew int)
+CREATE PROC sp_UpdatePQGV(@MaGV int,@MaPQ int,@MaPQnew int, @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_ChucVu ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF (@MaPQ = '')
 			BEGIN
 				PRINT N'Cập nhật thất bại phân quyền giáo viên! '
@@ -840,6 +958,12 @@ GO
 CREATE PROC sp_DeletePQGV(@MaGV int,@MaPQ int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_ChucVu ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF(EXISTS (select * from phanquyen_giaovien where MaGiaoVien = @MaGV AND MaPhanQuyen = @MaPQ ))
 			BEGIN
 				DELETE phanquyen_giaovien WHERE MaGiaoVien = @MaGV AND MaPhanQuyen = @MaPQ
@@ -876,9 +1000,15 @@ AS
 GO
 
 CREATE PROC sp_InsertCauHoi(@MaGV int, @MaBD int, @MaBM int, @NoiDung varchar(255), @ThangDiem float, @MucDo int, @LuaChon BIT, @Ngaytao date,
-								  @TrangThai BIT, @Thutu int)
+								  @TrangThai BIT, @Thutu int, @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_ThemCauHoi ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF(@NoiDung = '')
 			BEGIN
 				PRINT N'Cập nhật thất bại giáo viên! ' + @NoiDung
@@ -961,9 +1091,15 @@ AS
 GO
 
 CREATE PROC sp_UpdateCauHoi(@MaCH int,@MaGV int, @MaBD int, @MaBM int, @NoiDung varchar(255), @ThangDiem float, @MucDo int, @LuaChon BIT, @Ngaytao date,
-								  @TrangThai BIT, @Thutu int)
+								  @TrangThai BIT, @Thutu int, @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_CapNhatCauHoi ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF( NOT EXISTS (select * from cauhoi where MaCauHoi = @MaCH) )
 			BEGIN
 				Print N'Không tồn tại câu hỏi !'
@@ -1070,9 +1206,15 @@ AS
 	END
 GO
 
-CREATE PROC sp_DeleteCauHoi (@MaCH int)
+CREATE PROC sp_DeleteCauHoi (@MaCH int, @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_XoaCauHoi ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF (	EXISTS (select * from gop_y where MaCauHoi = @MaCH) OR
 				EXISTS (select * from cauhoi_hocky where MaCauHoi = @MaCH) OR
 				EXISTS (select * from traloi where MaCauHoi = @MaCH) )
@@ -1125,9 +1267,15 @@ AS
 	END
 GO
 
-CREATE PROC sp_InsertBoDe(@MaGV int, @TenBD varchar(100), @NgayTao date, @NoiDung varchar(max),@ThangDiem int, @ThuTu smallint)
+CREATE PROC sp_InsertBoDe(@MaGV int, @TenBD varchar(100), @NgayTao date, @NoiDung varchar(max),@ThangDiem int, @ThuTu smallint, @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_TaoBoDe ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF(@MaGV = '')
 			BEGIN
 				PRINT N'Thêm thất bại Bộ đề! ' + @TenBD
@@ -1171,9 +1319,15 @@ AS
 
 GO
 
-CREATE PROC sp_UpdateBoDe(@MaBD int,@MaGV int, @TenBD varchar(100), @NgayTao date, @NoiDung varchar(max),@ThangDiem int, @ThuTu smallint)
+CREATE PROC sp_UpdateBoDe(@MaBD int,@MaGV int, @TenBD varchar(100), @NgayTao date, @NoiDung varchar(max),@ThangDiem int, @ThuTu smallint, @MaGVCV)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_TaoBoDe ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF( NOT EXISTS (select * from bode where MaBoDe = @MaBD) )
 			BEGIN
 				Print N'Không tồn tại bộ đề !'
@@ -1235,9 +1389,15 @@ AS
 	END
 
 GO 
-CREATE PROC sp_DeleteBoDe(@MaBD int)
+CREATE PROC sp_DeleteBoDe(@MaBD int, @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_TaoBoDe ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF( NOT EXISTS (select * from bode where MaBoDe = @MaBD) )
 			BEGIN
 				Print N'Không tồn tại bộ đề !'
@@ -1281,9 +1441,15 @@ AS
 	END
 GO
 
-CREATE PROC sp_InsertGopY(@MaGV int, @MaCH int, @NoiDung varchar(max), @NgayTao date)
+CREATE PROC sp_InsertGopY(@MaGV int, @MaCH int, @NoiDung varchar(max), @NgayTao date, @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_GopY ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF(@NoiDung = '')
 			BEGIN
 				PRINT N'Thêm thất bại góp ý! ' + @NoiDung
@@ -1323,9 +1489,15 @@ AS
 GO
 
 
-CREATE PROC sp_UpdateGopY(@MaGY int, @MaGV int, @MaCH int, @NoiDung varchar(max), @NgayTao date)
+CREATE PROC sp_UpdateGopY(@MaGY int, @MaGV int, @MaCH int, @NoiDung varchar(max), @NgayTao date, @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_GopY ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF( NOT EXISTS (select * from gop_y where MaGopY = @MaGY) )
 			BEGIN
 				Print N'Không tồn tại góp ý!'
@@ -1379,9 +1551,15 @@ AS
 	END
 GO
 
-CREATE PROC sp_DeleteGopY(@MaGY int)
+CREATE PROC sp_DeleteGopY(@MaGY int, @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_GopY ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF( NOT EXISTS (select * from gop_y where MaGopY = @MaGY) )
 			BEGIN
 				Print N'Không tồn tại góp ý !'
@@ -1416,9 +1594,15 @@ AS
 	END
 GO
 
-CREATE PROC sp_InsertTraLoi(@MaCH int, @NoiDung varchar(max), @DapAn bit, @TenTraLoi varchar(2))
+CREATE PROC sp_InsertTraLoi(@MaCH int, @NoiDung varchar(max), @DapAn bit, @TenTraLoi varchar(2), @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_ThemCauHoi ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF(@MaCH = '')
 			BEGIN
 				PRINT N'Thêm thất bại câu trả lời! '
@@ -1460,9 +1644,15 @@ AS
 	END
 GO
 
-CREATE PROC sp_UpdateTraLoi(@MaCH int, @TenTraLoi varchar(2), @TenTraLoinew varchar(2), @NoiDung varchar(max), @DapAn bit)
+CREATE PROC sp_UpdateTraLoi(@MaCH int, @TenTraLoi varchar(2), @TenTraLoinew varchar(2), @NoiDung varchar(max), @DapAn bit, @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_ThemCauHoi ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF(@MaCH = '')
 			BEGIN
 				PRINT N'Thêm thất bại câu trả lời! '
@@ -1518,9 +1708,15 @@ AS
 	END
 GO
 
-CREATE PROC sp_DeleteTraLoi(@MaCH int, @TenTraLoi varchar(2))
+CREATE PROC sp_DeleteTraLoi(@MaCH int, @TenTraLoi varchar(2), @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_ThemCauHoi ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF(@MaCH = '')
 			BEGIN
 				PRINT N'Xóa thất bại câu trả lời! '
@@ -1575,9 +1771,15 @@ AS
 	END
 GO
 
-CREATE PROC sp_InsertNienKhoa (@TenNK varchar(255), @NgayBD date, @NgayKT date)
+CREATE PROC sp_InsertNienKhoa (@TenNK varchar(255), @NgayBD date, @NgayKT date, @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_NienKhoa ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF (@TenNK = '')
 			BEGIN
 				PRINT N'Thêm thất bại Niên khóa! ' + @TenNK
@@ -1586,11 +1788,15 @@ AS
 			END
 		IF (@NgayBD = '')
 			BEGIN
-				SET @NgayBD = GETDATE()
+				Print N'Thêm thất bại Niên khóa! ' + @TenNK
+				Print N'Ngày bắt đầu không được rỗng! '
+				return 0
 			END
 		IF (@NgayKT = '')
 			BEGIN
-				SET @NgayKT = GETDATE()
+				Print N'Thêm thất bại Niên khóa! ' + @TenNK
+				Print N'Ngày kết thúc không được rỗng! '
+				return 0
 			END
 		IF( (CONVERT(date, @NgayBD) > CONVERT(date, @NgayKT)) )
 			BEGIN
@@ -1598,15 +1804,34 @@ AS
 				PRINT N'Ngày bắt đầu phải nhỏ hơn ngày kết thúc!'
 				RETURN 0
 			END
+		IF( dateadd(day,365,@NgayBD) > CONVERT(date, @NgayKT) )
+			BEGIN
+				PRINT N'Thêm thất bại Niên khóa! ' + @TenNK
+				PRINT N'Ngày kết thúc tối thiểu phải trên 1 năm!'
+				RETURN 0
+			END
+		IF ( EXISTS (select * from nienkhoa where ThoiGianBatDau = @NgayBD) OR
+			 EXISTS (select * from nienkhoa where ThoiGianKetThuc = @NgayKT) )
+			BEGIN
+				Print N'Thêm thất bại Niên khóa! ' + @TenNK
+				Print N'Niên khóa này đã tồn tại! '
+				return 0
+			END
 		Insert into nienkhoa(TenNienKhoa, ThoiGianBatDau, ThoiGianKetThuc)
 		values(@TenNK, @NgayBD, @NgayKT)
 		Print N'Thêm thành công niên khóa ! ' + @TenNK
 	END
 GO
 
-CREATE PROC sp_UpdateNienKhoa (@MaNK int, @TenNK varchar(255), @NgayBD date, @NgayKT date)
+CREATE PROC sp_UpdateNienKhoa (@MaNK int, @TenNK varchar(255), @NgayBD date, @NgayKT date, @MaGVCV)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_NienKhoa ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF (@MaNK = '')
 			BEGIN
 				PRINT N'Cập nhật thất bại Niên khóa! ' + @TenNK
@@ -1627,17 +1852,34 @@ AS
 			END
 		IF (@NgayBD = '')
 			BEGIN
-				SET @NgayBD = GETDATE()
+				Print N'Cập nhật thất bại Niên khóa! ' + @TenNK
+				Print N'Ngày bắt đầu không được rỗng! '
+				return 0
 			END
 		IF (@NgayKT = '')
 			BEGIN
-				SET @NgayKT = GETDATE()
+				Print N'Cập nhật thất bại Niên khóa! ' + @TenNK
+				Print N'Ngày kết thúc không được rỗng! '
+				return 0
 			END
 		IF( (CONVERT(date, @NgayBD) > CONVERT(date, @NgayKT)) )
 			BEGIN
 				PRINT N'Cập nhật thất bại Niên khóa! ' + @TenNK
 				PRINT N'Ngày bắt đầu phải nhỏ hơn ngày kết thúc!'
 				RETURN 0
+			END
+		IF( dateadd(day,365,@NgayBD) > CONVERT(date, @NgayKT) )
+			BEGIN
+				PRINT N'Cập nhật thất bại Niên khóa! ' + @TenNK
+				PRINT N'Ngày kết thúc tối thiểu phải trên 1 năm!'
+				RETURN 0
+			END
+		IF ( EXISTS (select * from nienkhoa where ThoiGianBatDau = @NgayBD) OR
+			 EXISTS (select * from nienkhoa where ThoiGianKetThuc = @NgayKT) )
+			BEGIN
+				Print N'Cập nhật thất bại Niên khóa! ' + @TenNK
+				Print N'Niên khóa này đã tồn tại! '
+				return 0
 			END
 		update nienkhoa
 		set TenNienKhoa = @TenNK,
@@ -1648,9 +1890,15 @@ AS
 	END
 GO
 
-CREATE PROC sp_DeleteNienKhoa (@MaNK int)
+CREATE PROC sp_DeleteNienKhoa (@MaNK int, @MaGVCV)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_NienKhoa ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF (EXISTS (select * from hocky where MaNienKhoa = @MaNK))
 			BEGIN
 				Print N'Xóa thất bại hệ!'
@@ -1673,9 +1921,13 @@ AS
 
 
 GO
-exec sp_InsertNienKhoa 'abc','',''
+exec sp_DeleteNienKhoa 6
+exec sp_selectNienKhoa
+exec sp_InsertNienKhoa 'Nien Khoa 2017 - 2018','09/06/2017','09/06/2018'
+exec sp_InsertNienKhoa 'Nien Khoa 2018 - 2020','09/06/2018','09/06/2020'
 
-exec sp_UpdateNienKhoa '1', '12','',''
+exec sp_UpdateNienKhoa '5', 'Nien Khoa 2017 - 2018','09/06/2017','09/06/2018'
+GO
 
 /*
 *** Proc bomon ***
@@ -1685,48 +1937,95 @@ exec sp_UpdateNienKhoa '1', '12','',''
 4 - Delete			Exec sp_DeleteBoMon 5
 */
 
-Exec sp_SelectHocKy
+CREATE PROC sp_SelectHocKy
 AS
 	BEGIN
 		SELECT * FROM hocky
 	END
 GO
 
-CREATE PROC sp_InsertHocKy (@TenHocKy nvarchar(255), @NgayBatDau date, @NgayKetThuc date, @MaNienKhoa int)
+CREATE PROC sp_InsertHocKy (@TenHocKy nvarchar(255), @NgayBatDau date, @NgayKetThuc date, @MaNienKhoa int, @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_NienKhoa ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF (@NgayBatDau = '')
 			BEGIN
-				set @NgayBatDau = GETDATE()
+				Print N'Thêm thất bại học kỳ! ' + @TenHocKy
+				Print N'Ngày bắt đầu không được rỗng! '
+				return 0
 			END
 		IF (@NgayKetThuc = '')
 			BEGIN
-				set @NgayKetThuc = GETDATE()
+				Print N'Thêm thất bại học kỳ! ' + @TenHocKy
+				Print N'Ngày kết thúc không được rỗng! '
+				return 0
 			END
 		IF (@MaNienKhoa = '')
 			BEGIN
 				Print N'Thêm thất bại học kỳ! ' + @TenHocKy
 				Print N'Mã niên khóa không được rỗng! '
-			END
-		IF( (CONVERT(date, @NgayBatDau) > CONVERT(date, @NgayKetThuc)) )
-			BEGIN
-				PRINT N'Thêm thất bại học kỳ! ' + @TenNK
-				PRINT N'Ngày bắt đầu phải nhỏ hơn ngày kết thúc!'
-				RETURN 0
+				return 0
 			END
 		IF ( NOT EXISTS (select * from nienkhoa where MaNienKhoa = @MaNienKhoa) )
 			BEGIN
 				Print N'Thêm thất bại học kỳ! ' + @TenHocKy
 				Print N'Mã niên khóa không tồn tại! '
 			END
+		IF( (CONVERT(date, @NgayBatDau) > CONVERT(date, @NgayKetThuc)) )
+			BEGIN
+				PRINT N'Thêm thất bại học kỳ! ' + @TenHocKy
+				PRINT N'Ngày bắt đầu phải nhỏ hơn ngày kết thúc!'
+				RETURN 0
+			END
+		IF( (CONVERT(date, @NgayBatDau) > CONVERT(date, @NgayKetThuc)) )
+			BEGIN
+				PRINT N'Thêm thất bại học kỳ! ' + @TenHocKy
+				PRINT N'Ngày bắt đầu phải nhỏ hơn ngày kết thúc!'
+				RETURN 0
+			END
+
+		IF ( EXISTS (select * from nienkhoa where MaNienKhoa = @MaNienKhoa))
+			BEGIN
+				declare @NgayBDNK date, @NgayKTNK date, @NgayKTHKCuoi date ;		
+				select @NgayBDNK =  ThoiGianBatDau from nienkhoa where MaNienKhoa = @MaNienKhoa
+				select @NgayKTNK =  ThoiGianKetThuc from nienkhoa where MaNienKhoa = @MaNienKhoa
+				IF( (CONVERT(date, @NgayBatDau) < CONVERT(date, @NgayBDNK)) OR 
+					(CONVERT(date, @NgayKetThuc) > CONVERT(date, @NgayKTNK)) ) 
+					BEGIN
+						Print N'Thêm thất bại học kỳ! ' + @TenHocKy
+						Print N'Ngày bắt đầu của học kỳ phải >= ngày bắt đầu niên khóa! Hay'
+						Print N'Ngày kết thúc của học kỳ phải =< ngày ngày kết thúc niên khóa!'
+						RETURN 0
+					END
+				select TOP 1 @NgayKTHKCuoi = hocky.NgayKetThuc from nienkhoa, hocky where nienkhoa.MaNienKhoa = hocky.MaNienKhoa
+				ORDER BY hocky.MaHocKy DESC
+				IF ( (CONVERT(date, @NgayKTHKCuoi) > CONVERT(date, @NgayBatDau)) )
+					BEGIN
+						Print N'Thêm thất bại học kỳ! ' + @TenHocKy
+						Print N'Ngày bắt đầu của học kỳ phải >= ngày kết thúc của học kỳ trước có cùng niên khóa!'
+						RETURN 0
+					END
+			END 
+		
 		INSERT INTO hocky(TenHocKy, NgayBatDau, NgayKetThuc, MaNienKhoa)
 		VALUES (@TenHocKy, @NgayBatDau, @NgayKetThuc, @MaNienKhoa)
 	END
 GO
 
-CREATE PROC sp_UpdateHocKy (@MaHocKy int, @TenHocKy nvarchar(255), @NgayBatDau date, @NgayKetThuc date, @MaNienKhoa int)
+CREATE PROC sp_UpdateHocKy (@MaHocKy int, @TenHocKy nvarchar(255), @NgayBatDau date, @NgayKetThuc date, @MaNienKhoa int, @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_NienKhoa ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF (@NgayBatDau = '')
 			BEGIN
 				set @NgayBatDau = GETDATE()
@@ -1739,12 +2038,6 @@ AS
 			BEGIN
 				Print N'Cập nhật thất bại học kỳ! ' + @TenHocKy
 				Print N'Mã niên khóa không được rỗng! '
-			END
-		IF( (CONVERT(date, @NgayBatDau) > CONVERT(date, @NgayKetThuc)) )
-			BEGIN
-				PRINT N'Cập nhật thất bại học kỳ! ' + @TenNK
-				PRINT N'Ngày bắt đầu phải nhỏ hơn ngày kết thúc!'
-				RETURN 0
 			END
 		IF ( NOT EXISTS (select * from nienkhoa where MaNienKhoa = @MaNienKhoa) )
 			BEGIN
@@ -1761,6 +2054,53 @@ AS
 				Print N'Cập nhật thất bại học kỳ! ' + @TenHocKy
 				Print N'Mã học kỳ không tồn tại! '
 			END
+		IF( (CONVERT(date, @NgayBatDau) > CONVERT(date, @NgayKetThuc)) )
+			BEGIN
+				PRINT N'Cập nhật thất bại học kỳ! ' + @TenHocKy
+				PRINT N'Ngày bắt đầu phải nhỏ hơn ngày kết thúc!'
+				RETURN 0
+			END
+		IF( (CONVERT(date, @NgayBatDau) > CONVERT(date, @NgayKetThuc)) )
+			BEGIN
+				PRINT N'Cập nhật thất bại học kỳ! ' + @TenHocKy
+				PRINT N'Ngày bắt đầu phải nhỏ hơn ngày kết thúc!'
+				RETURN 0
+			END
+
+		IF ( EXISTS (select * from nienkhoa where MaNienKhoa = @MaNienKhoa))
+			BEGIN
+				declare @NgayBDNK date, @NgayKTNK date, @NgayKTHKCu date, @NgayBDKTiep date ;		
+				select @NgayBDNK =  ThoiGianBatDau from nienkhoa where MaNienKhoa = @MaNienKhoa
+				select @NgayKTNK =  ThoiGianKetThuc from nienkhoa where MaNienKhoa = @MaNienKhoa
+				IF( (CONVERT(date, @NgayBatDau) < CONVERT(date, @NgayBDNK)) OR 
+					(CONVERT(date, @NgayKetThuc) > CONVERT(date, @NgayKTNK)) ) 
+					BEGIN
+						Print N'Cập nhật thất bại học kỳ! ' + @TenHocKy
+						Print N'Ngày bắt đầu của học kỳ phải >= ngày bắt đầu niên khóa! Hay'
+						Print N'Ngày kết thúc của học kỳ phải =< ngày ngày kết thúc niên khóa!'
+						RETURN 0
+					END
+				
+				select @NgayKTHKCu = NgayKetThuc from hocky where MaHocKy = @MaHocKy
+				select @NgayBDKTiep = min(NgayBatDau) from hocky where NgayBatDau > @NgayKTHKCu 
+				IF ( (CONVERT(date, @NgayBDKTiep) < CONVERT(date, @NgayKetThuc)) )
+					BEGIN
+						Print N'Cập nhật thất bại học kỳ! ' + @TenHocKy
+						Print N'Ngày kết thúc của học kỳ này phải < ngày bắt đầu của học kỳ tiếp theo có cùng niên khóa!'
+						RETURN 0
+					END
+				
+				DECLARE @NgayBDHKCu date, @NgayKTHKTruoc date
+				select @NgayBDHKCu = NgayBatDau from hocky where MaHocKy = @MaHocKy
+				select @NgayKTHKTruoc = max(NgayKetThuc) from hocky where NgayKetThuc < @NgayBDHKCu 
+				IF ( (CONVERT(date, @NgayKTHKTruoc) > CONVERT(date, @NgayBatDau)) )
+					BEGIN
+						Print N'Cập nhật thất bại học kỳ! ' + @TenHocKy
+						Print N'Ngày bắt đầu của học kỳ này phải > ngày kết thúc của học kỳ trước có cùng niên khóa!'
+						RETURN 0
+					END
+			END 
+		
 		UPDATE hocky
 		SET	TenHocKy = @TenHocKy,
 				NgayBatDau = @NgayBatDau,
@@ -1770,9 +2110,15 @@ AS
 	END
 GO
 
-CREATE PROC sp_DeleteHocKy (@MaHocKy int)
+CREATE PROC sp_DeleteHocKy (@MaHocKy int, @MaGVCV int)
 AS
 	BEGIN
+		IF ( NOT EXISTS (select * from phanquyen_giaovien where MaGV = @MaGVCV and MaPhanQuyen = @Quyen_NienKhoa ))	  
+			BEGIN
+				Print N'Giáo viên chưa được cấp quyền cho chức năng này ! '
+				Print @MaGVCV
+				return 0
+			END
 		IF (EXISTS (select * from cauhoi_hocky where MaHocKy = @MaHocKy))
 			BEGIN
 				Print N'Xóa thất bại học kỳ!'
@@ -1793,6 +2139,51 @@ AS
 			END
 	END
 GO
+
+-- CREATE PROC sp_UpdateHocKyNgayKetThuc (@MaHocKy int, @NgayKetThucmoi date)
+-- AS
+-- 	BEGIN
+-- 		declare @NgayKTOld date, @NgayBDKTIEP date
+		
+-- 	  select @NgayKTOld = NgayKetThuc from hocky where MaHocKy = @MaHocKy
+-- 	  select @NgayBDKTIEP =  min(NgayBatDau) from hocky where NgayBatDau > @NgayKTOld 
+-- 		IF ( @NgayBDKTIEP = '')
+-- 			BEGIN
+-- 				UPDATE hocky
+-- 				SET NgayKetThuc = @NgayKetThucmoi
+-- 				WHERE MaHocKy = @MaHocKy
+-- 				PRINT N'SUA THOAI MAI'
+-- 				RETURN 1
+-- 			END
+-- 		ELSE
+-- 			IF ( (CONVERT(date, @NgayBDKTIEP) > CONVERT(date, @NgayKetThucmoi)))
+-- 				BEGIN
+-- 					UPDATE hocky
+-- 					SET NgayKetThuc = @NgayKetThucmoi
+-- 					WHERE MaHocKy = @MaHocKy
+-- 					PRINT N'Sua Thoai Mai'
+-- 					return 1
+-- 				END
+-- 			ELSE
+-- 				BEGIN
+-- 					PRINT N'kHONG DUOC Sua'
+-- 					return 1
+-- 				END
+-- 	END
+
+-- GO
+EXEC sp_UpdateHocKyNgayKetThuc '1', '03/10/2018'
+
+sp_selectNienKhoa
+
+sp_selectHocKy 
+exec sp_InsertHocKy HK1,'09/06/2017', '03/06/2018', '5'
+exec sp_InsertHocKy HK2,'03/06/2018', '09/06/2018', '5'
+exec sp_InsertHocKy HK3,'09/06/2018', '09/06/2019', '5'
+exec sp_UpdateHocKy '1', 'HK1', '09/06/2017', '03/05/2018','5'
+exec sp_UpdateHocKy '2', 'HK1', '03/08/2018', '09/06/2018','5'
+
+
 
 /*
 *** Proc CAUHOI_HOCKY ***
