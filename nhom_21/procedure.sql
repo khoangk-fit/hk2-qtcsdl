@@ -1677,7 +1677,186 @@ exec sp_InsertNienKhoa 'abc','',''
 
 exec sp_UpdateNienKhoa '1', '12','',''
 
-sp_selectNienKhoa
+/*
+*** Proc bomon ***
+1 - Select			Exec sp_SelectHocKy
+2 - Insert			Exec sp_InsertBoMon 1, 'Hoan Chinh', '1/12/2019', ''
+3 - Edit			Exec sp_UpdateBoMon 6, 2, '', '', 0
+4 - Delete			Exec sp_DeleteBoMon 5
+*/
+
+Exec sp_SelectHocKy
+AS
+	BEGIN
+		SELECT * FROM hocky
+	END
+GO
+
+CREATE PROC sp_InsertHocKy (@TenHocKy nvarchar(255), @NgayBatDau date, @NgayKetThuc date, @MaNienKhoa int)
+AS
+	BEGIN
+		IF (@NgayBatDau = '')
+			BEGIN
+				set @NgayBatDau = GETDATE()
+			END
+		IF (@NgayKetThuc = '')
+			BEGIN
+				set @NgayKetThuc = GETDATE()
+			END
+		IF (@MaNienKhoa = '')
+			BEGIN
+				Print N'Thêm thất bại học kỳ! ' + @TenHocKy
+				Print N'Mã niên khóa không được rỗng! '
+			END
+		IF( (CONVERT(date, @NgayBatDau) > CONVERT(date, @NgayKetThuc)) )
+			BEGIN
+				PRINT N'Thêm thất bại học kỳ! ' + @TenNK
+				PRINT N'Ngày bắt đầu phải nhỏ hơn ngày kết thúc!'
+				RETURN 0
+			END
+		IF ( NOT EXISTS (select * from nienkhoa where MaNienKhoa = @MaNienKhoa) )
+			BEGIN
+				Print N'Thêm thất bại học kỳ! ' + @TenHocKy
+				Print N'Mã niên khóa không tồn tại! '
+			END
+		INSERT INTO hocky(TenHocKy, NgayBatDau, NgayKetThuc, MaNienKhoa)
+		VALUES (@TenHocKy, @NgayBatDau, @NgayKetThuc, @MaNienKhoa)
+	END
+GO
+
+CREATE PROC sp_UpdateHocKy (@MaHocKy int, @TenHocKy nvarchar(255), @NgayBatDau date, @NgayKetThuc date, @MaNienKhoa int)
+AS
+	BEGIN
+		IF (@NgayBatDau = '')
+			BEGIN
+				set @NgayBatDau = GETDATE()
+			END
+		IF (@NgayKetThuc = '')
+			BEGIN
+				set @NgayKetThuc = GETDATE()
+			END
+		IF (@MaNienKhoa = '')
+			BEGIN
+				Print N'Cập nhật thất bại học kỳ! ' + @TenHocKy
+				Print N'Mã niên khóa không được rỗng! '
+			END
+		IF( (CONVERT(date, @NgayBatDau) > CONVERT(date, @NgayKetThuc)) )
+			BEGIN
+				PRINT N'Cập nhật thất bại học kỳ! ' + @TenNK
+				PRINT N'Ngày bắt đầu phải nhỏ hơn ngày kết thúc!'
+				RETURN 0
+			END
+		IF ( NOT EXISTS (select * from nienkhoa where MaNienKhoa = @MaNienKhoa) )
+			BEGIN
+				Print N'Cập nhật thất bại học kỳ! ' + @TenHocKy
+				Print N'Mã niên khóa không tồn tại! '
+			END
+		IF (@MaHocKy = '')
+			BEGIN
+				Print N'Cập nhật thất bại học kỳ! ' + @TenHocKy
+				Print N'Mã học kỳ không được rỗng! '
+			END
+		IF ( NOT EXISTS (select * from hocky where MaHocKy = @MaHocKy) )
+			BEGIN
+				Print N'Cập nhật thất bại học kỳ! ' + @TenHocKy
+				Print N'Mã học kỳ không tồn tại! '
+			END
+		UPDATE hocky
+		SET	TenHocKy = @TenHocKy,
+				NgayBatDau = @NgayBatDau,
+				NgayKetThuc = @NgayKetThuc,
+				MaNienKhoa = @MaNienKhoa
+		WHERE MaHocKy = @MaHocKy
+	END
+GO
+
+CREATE PROC sp_DeleteHocKy (@MaHocKy int)
+AS
+	BEGIN
+		IF (EXISTS (select * from cauhoi_hocky where MaHocKy = @MaHocKy))
+			BEGIN
+				Print N'Xóa thất bại học kỳ!'
+				Print @MaHocKy
+				Print N'Mã học kỳ đang được sử dụng'
+				RETURN 1
+			END
+		IF (EXISTS (select * from hocky where MaHocKy = @MaHocKy))
+			BEGIN
+				DELETE cauhoi_hocky WHERE MaHocKy = @MaHocKy
+				Print N'Xóa thành công hoc kỳ!'
+				Print @MaHocKy
+			END
+		ELSE
+			BEGIN
+				Print N'Không tồn tại hoc kỳ!'
+				Print @MaBM
+			END
+	END
+GO
+
+/*
+*** Proc CAUHOI_HOCKY ***
+1 - Select			Exec sp_selecCHHK
+2 - Insert			EXEC sp_InsertPQGV '11', '2'
+3 - Edit			exec sp_UpdatePQGV 4,8,12
+4 - Delete			exec sp_DeletePQGV 4,10
+*/
+
+GO 
+CREATE PROC sp_selecCHHK
+AS
+	BEGIN
+		SELECT * FROM cauhoi_hocky 
+	END
+GO
+
+CREATE PROC sp_InsertCHHK(@MaHocKy int, @MaCauHoi int)
+AS
+	BEGIN
+		IF (@MaHocKy = '')
+			BEGIN
+				PRINT N'Thêm thất bại câu hỏi học kỳ!'
+				PRINT @MaHocKy
+				PRINT N'Mã học kỳ không được rỗng'
+				RETURN 0
+			END
+		IF (@MaCauHoi = '')
+			BEGIN
+				PRINT N'Thêm thất bại câu hỏi học kỳ!'
+				PRINT @MaHocKy
+				PRINT N'Mã câu hỏi không được rỗng'
+				RETURN 0
+			END
+		IF ( NOT EXISTS (select * from hocky where MaHocKy = @MaHocKy) )
+			BEGIN
+				PRINT N'Thêm thất bại câu hỏi học kỳ!'
+				PRINT @MaHocKy
+				PRINT N'Mã học kỳ không tồn tại'
+				RETURN 0
+			END
+		IF ( NOT EXISTS (select * from cauhoi where MaCauHoi = @MaCauHoi) )
+			BEGIN
+				PRINT N'Thêm thất bại câu hỏi học kỳ!'
+				PRINT @MaHocKy
+				PRINT N'Mã giáo viên không tồn tại'
+				RETURN 0
+			END
+		IF ( EXISTS (select * from cauhoi_hocky where MaHocKy = @MaHocKy and MaCauHoi = @MaCauHoi) )
+			BEGIN
+				PRINT N'Thêm thất bại câu hỏi học kỳ!'
+				PRINT @MaHocKy
+				PRINT N'Mã câu hỏi cho học kỳ này đã được thêm'
+				RETURN 0
+			END
+		DECLARE @MaNienKhoa int, @MaCauHoiNK int
+			set @MaNienKhoa = select count(MaHocKy) from hocky group by MaNienKhoa having count(MaHocKy) >= 2
+		INSERT INTO cauhoi_hocky(MaHocKy, MaCauHoi)
+		VALUES (@MaHocKy, @MaCauHoi)
+	END
+GO
+
+
+
 
 select * from chucvu
 SELECT * FROM giaovien
